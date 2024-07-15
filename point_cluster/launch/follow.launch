@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<launch>
+    
+    <arg name="arg_anquan_juli" value="4.5"/> <!-- 安全距离 -->
+    <arg name="arg_human_height" value="1.1"/> <!-- 建议0.7～1.4，调大增加跟踪稳定性，但提高最小识别距离 -->
+    <arg name="arg_min_intensity" value="50.0"/> <!-- 最小跟踪强度 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    <!-- 地面分割 -->
+    <node pkg="points_ground_filter" type="points_ground_filter_node" name="points_ground_filter_node" output="screen">
+
+        <param name="TO_MERGE_CNT" value="1"/>
+
+        <!--param name="sub_topic" value="/livox/lidar_192_168_1_102"/--> 
+        <param name="sub_topic" value="/livox/lidar_192_168_1_101"/> 
+
+        <param name="pub_ground_topic" value="/points_ground"/>
+        <param name="pub_no_ground_topic" value="/points_no_ground"/>
+        
+        <param name="show_points_size" value="false"/>
+        <param name="show_time" value="false"/>
+        
+        <param name="sensor_height" value="0.4"/>
+        <param name="radius_divider" value="0.1"/>
+        <param name="theta_divider" value="0.1"/>
+
+        <!-- 可能需要调节某个阈值，正确分割出地面 -->
+        <param name="local_slope_threshold" value="10"/>
+        <param name="general_slope_threshold" value="4"/>
+        
+        <param name="ground_filter_mode" value="false"/>
+        <param name="ground_meank" value="5"/>
+        <param name="ground_stdmul" value="1.0"/>
+        
+        <param name="no_ground_filter_mode" value="false"/>
+        <param name="no_ground_meank" value="5"/>
+        <param name="no_ground_stdmul" value="1.0"/>
+    </node>
+
+    <!-- 点云聚类 -->
+    <node pkg="points_cluster" type="points_cluster_node" name="points_cluster_node" output="screen">
+        <param name="sub_topic" value="/points_no_ground"/>
+        <!--param name="sub_topic" value="/velodyne_points"/-->
+        <param name="pub_topic" value="/objects"/>
+
+        <param name="show_objects_num" value="false"/>
+        <param name="show_time" value="false"/>
+
+        <param name="fit_obb" value="true"/>
+        
+        <param name="min_cluster_points_num" value="200"/>
+        <param name="max_cluster_points_num" value="500000"/>
+        
+        <!-- 可调整聚类最大最小的尺寸 -->
+        <param name="min_cluster_size" value="0.2"/>
+        <param name="max_cluster_size" value="20"/>
+        
+        <!-- 一般不需要调整，根据距离分段聚类 -->
+        <param name="seg_num" value="30"/>
+        <rosparam param="seg_distance" > [10, 30, 50] </rosparam>
+        <rosparam param="cluster_distance" > [0.045, 0.3, 0.6] </rosparam>
+
+        <!-- 丢弃超过该尺寸的聚类 -->
+        <rosparam param="crop_cluster_size" > [15, 15, 8] </rosparam>
+        
+        <param name="road_info" value="true"/>
+        <rosparam param="crop_distance" > 15.0 </rosparam>
+        
+    </node>
+
+
+    <!-- 目标跟踪 -->
+    <node pkg="multiple_target_tracking" type="multiple_target_tracking_node" name="multiple_target_tracking_node" output="screen">
+        <param name="sub_topic" value="/objects"/>
+        <param name="pub_topic" value="/objects_tracked"/>
+        <param name="pub_topic_obstacle_array" value="/obstacle_array"/>
+        <param name="pub_topic_position" value="/obj_xyz"/>
+        <param name="frame_id" value="livox_frame"/> <!-- 需要根据当前frame调整 -->
+        
+        <param name="show_objects_num" value="true"/>
+        <param name="show_time" value="false"/>
+
+        <param name="time_interval" value="0.1"/>
+        <!-- 跟踪的残差阈值，速度过快以至于跟踪不上时可能需要调整 -->
+        <param name="gate_threshold" value="200"/>
+        <param name="blind_update_limit" value="1"/>
+        
+        <param name="sigma_ax" value="1"/>
+        <param name="sigma_ay" value="1"/>
+        <param name="sigma_ox" value="0.1"/>
+        <param name="sigma_oy" value="0.1"/>
+        
+        <!-- 丢弃超过该尺寸的目标，需要调整 -->
+        <param name="min_scale" value="0.2"/>
+        <param name="max_scale" value="0.8"/>
+        <param name="min_height" value="$(arg arg_human_height)"/>
+        <param name="max_height" value="2.0"/>
+        <param name="min_intensity" value="$(arg arg_min_intensity)"/>
+    </node>
+
+    <node pkg="follow" type="follow_node" name="follow_node" output="screen">
+        <param name="yuzhi_anquan" value="$(arg arg_anquan_juli)"/>
+        <param name="debug_on" value="1"/>
+        <param name="xishu_linearx" value="0.5"/>
+        <param name="xishu_angularz" value="2"/>
+        <param name="yuzhi_x" value="4"/>
+        <param name="yuzhi_z" value="3"/>
+        <param name="info_print" value="false"/>
+    </node>
+
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find points_cluster)/launch/track.rviz" />
+</launch>

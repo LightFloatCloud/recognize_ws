@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="points_ground_filter" type="points_ground_filter_node" name="points_ground_filter_node" output="screen">
+        <param name="sub_topic" value="/velodyne_points"/>
+        <param name="pub_ground_topic" value="/points_ground"/>
+        <param name="pub_no_ground_topic" value="/points_no_ground"/>
+        
+        <param name="show_points_size" value="true"/>
+        <param name="show_time" value="true"/>
+        
+        <param name="sensor_height" value="1.0"/>
+        <param name="radius_divider" value="0.15"/>
+        <param name="theta_divider" value="0.01"/>
+        <param name="local_slope_threshold" value="10"/>
+        <param name="general_slope_threshold" value="15"/>
+        
+        <param name="ground_filter_mode" value="false"/>
+        <param name="ground_meank" value="5"/>
+        <param name="ground_stdmul" value="1.0"/>
+        
+        <param name="no_ground_filter_mode" value="false"/>
+        <param name="no_ground_meank" value="5"/>
+        <param name="no_ground_stdmul" value="1.0"/>
+    </node>
+
+
+    <node pkg="rviz" type="rviz" name="rviz" args="-d run_rviz.rviz" required="true" />
+</launch>

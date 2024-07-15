@@ -1,0 +1,30 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/seu/DSTA/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/seu/DSTA/src/deal_point/include/**",
+        "/home/seu/DSTA/src/FAST_LIO/include/**",
+        "/home/seu/DSTA/src/mapsave_pkg/include/**",
+        "/home/seu/DSTA/src/multiple_target_tracking/include/**",
+        "/home/seu/DSTA/src/pmg2jpg/include/**",
+        "/home/seu/DSTA/src/point_cluster/include/**",
+        "/home/seu/DSTA/src/points_freespace_extractor/include/**",
+        "/home/seu/DSTA/src/points_ground_filter/include/**",
+        "/home/seu/DSTA/src/recognition_pkg/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

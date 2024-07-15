@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- 地面分割 -->
+    <node pkg="points_ground_filter" type="points_ground_filter_node" name="points_ground_filter_node" output="screen">
+        <param name="sub_topic" value="/velodyne_points"/> <!-- 需要修改点云topic -->
+        <param name="pub_ground_topic" value="/points_ground"/>
+        <param name="pub_no_ground_topic" value="/points_no_ground"/>
+        
+        <param name="show_points_size" value="true"/>
+        <param name="show_time" value="true"/>
+        
+        <param name="sensor_height" value="1.0"/>
+        <param name="radius_divider" value="0.15"/>
+        <param name="theta_divider" value="0.01"/>
+
+        <!-- 可能需要调节某个阈值，正确分割出地面 -->
+        <param name="local_slope_threshold" value="10"/>
+        <param name="general_slope_threshold" value="15"/>
+        
+        <param name="ground_filter_mode" value="false"/>
+        <param name="ground_meank" value="5"/>
+        <param name="ground_stdmul" value="1.0"/>
+        
+        <param name="no_ground_filter_mode" value="false"/>
+        <param name="no_ground_meank" value="5"/>
+        <param name="no_ground_stdmul" value="1.0"/>
+    </node>
+
+    <!-- 点云聚类 -->
+    <node pkg="points_cluster" type="points_cluster_node" name="points_cluster_node" output="screen">
+        <param name="sub_topic" value="/points_no_ground"/>
+        <!--param name="sub_topic" value="/velodyne_points"/-->
+        <param name="pub_topic" value="/objects"/>
+
+        <param name="show_objects_num" value="true"/>
+        <param name="show_time" value="true"/>
+
+        <param name="fit_obb" value="true"/>
+        
+        <param name="min_cluster_points_num" value="100"/>
+        <param name="max_cluster_points_num" value="50000"/>
+        
+        <!-- 可调整聚类最大最小的尺寸 -->
+        <param name="min_cluster_size" value="0.5"/>
+        <param name="max_cluster_size" value="15"/>
+        
+        <!-- 一般不需要调整，根据距离分段聚类 -->
+        <param name="seg_num" value="30"/>
+        <rosparam param="seg_distance" > [15, 40, 60] </rosparam>
+        <rosparam param="cluster_distance" > [0.2, 1.0, 2.0] </rosparam>
+
+        <!-- 丢弃超过该尺寸的聚类 -->
+        <rosparam param="crop_cluster_size" > [20, 20, 40] </rosparam>
+        
+        <!--rosparam param="seg_distance" > [30, 45, 60] </rosparam>
+
+        原程序的道路分割
+        <param name="road_info" value="true"/>
+        <rosparam param="road_edge_left" > [15, 0, 0, 0] </rosparam>
+        <rosparam param="road_edge_right" > [15, 0, 0, 0] </rosparam>
+        
+        <rosparam param="crop_distance" > 15.0 </rosparam>
+        <rosparam param="road_edge_left" > [0, 0, 0, 11.75] </rosparam>
+        <rosparam param="road_edge_right" > [0, 0, 0, -8.25] </rosparam-->
+    </node>
+
+
+    <!-- 目标跟踪 -->
+    <node pkg="multiple_target_tracking" type="multiple_target_tracking_node" name="multiple_target_tracking_node" output="screen">
+        <param name="sub_topic" value="/objects"/>
+        <param name="pub_topic" value="/objects_tracked"/>
+        <param name="pub_topic_obstacle_array" value="/obstacle_array"/>
+        <param name="frame_id" value="velodyne"/> <!-- 需要根据当前frame调整 -->
+        
+        <param name="show_objects_num" value="true"/>
+        <param name="show_time" value="true"/>
+
+        <param name="time_interval" value="0.1"/>
+        <!-- 跟踪的残差阈值，速度过快以至于跟踪不上时可能需要调整 -->
+        <param name="gate_threshold" value="400"/>
+        <param name="blind_update_limit" value="1"/>
+        
+        <param name="sigma_ax" value="1"/>
+        <param name="sigma_ay" value="1"/>
+        <param name="sigma_ox" value="0.1"/>
+        <param name="sigma_oy" value="0.1"/>
+        
+        <!-- 丢弃超过该尺寸的目标，需要调整 -->
+        <param name="min_scale" value="0.0"/>
+        <param name="max_scale" value="1.2"/>
+        <param name="min_height" value="0.0"/>
+        <param name="max_height" value="2.2"/>
+    </node>
+
+
+
+    <!--node pkg="rviz" type="rviz" name="rviz" args="-d run_rviz.rviz" required="true" /-->
+</launch>
