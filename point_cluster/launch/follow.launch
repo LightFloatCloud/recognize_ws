@@ -61,7 +61,7 @@
         <rosparam param="crop_distance" > 15.0 </rosparam>
         <!-- 丢弃路外的点 y关于x的3次 2次 1次 0次系数-->
         <rosparam param="road_edge_left" > [0, 0, 0, 10] </rosparam> 
-        <rosparam param="road_edge_right" > [0, 0, 0, -8] </rosparam-->
+        <rosparam param="road_edge_right" > [0, 0, 0, -8] </rosparam>
 
         
         <!-- 一般不需要调整，根据距离分段聚类 -->
