@@ -565,10 +565,11 @@ void EuCluster::crop(const pcl::PointCloud<pcl::PointXYZI>::Ptr pc,
     {
         float x = pc->points[i].x;
         float y = pc->points[i].y;
-        //if(y > x * x * x * edge_right[0] + x * x * edge_right[1] + x * edge_right[2] + edge_right[3] &&
-        //    y < x * x * x * edge_left[0] + x * x * edge_left[1] + x * edge_left[2] + edge_left[3])
+        
         if(x * x + y * y < this->crop_distance_ * this->crop_distance_)
         {
+            if(y > x * x * x * edge_right[0] + x * x * edge_right[1] + x * edge_right[2] + edge_right[3] &&
+                y < x * x * x * edge_left[0] + x * x * edge_left[1] + x * edge_left[2] + edge_left[3])
             continue;
         }
         indices.indices.push_back(i);
@@ -637,7 +638,6 @@ void EuCluster::callback(const sensor_msgs::PointCloud2ConstPtr in)
     }
     pub_.publish(objs);
 
-    ros::Time time_end = ros::Time::now();
 
     if(show_objects_num_ || show_time_)
     {
@@ -676,7 +676,7 @@ void EuCluster::callback(const sensor_msgs::PointCloud2ConstPtr in)
     /*********************************************************************/
 
 
-
+    ros::Time time_end = ros::Time::now();
     if(show_time_)
     {
         std::cout << "Time cost per frame: " << time_end - time_start << "s" << std::endl;

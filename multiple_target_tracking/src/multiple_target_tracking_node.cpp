@@ -140,6 +140,8 @@ MTT::~MTT()
 // 查找最近的物体并更新信息  
 void MTT::updateClosestObject() 
 {  
+    const double Track_Thres = 15; // 超过这个距离不主动跟踪了
+
     double closest_distance_ = std::numeric_limits<double>::max();  
     int new_closest_id = -1;  // 当前最近的id
     for (int i = 0; i < objs_tracked_.size(); ++i) {  
@@ -154,7 +156,7 @@ void MTT::updateClosestObject()
         }  
     }  
     if(current_tracked_id_ == -1) {  // 未跟踪则跟踪最近的物体
-        if(closest_distance_ < 15*15)
+        if(closest_distance_ < Track_Thres*Track_Thres)
             current_tracked_id_ = new_closest_id;
         return;
     }
@@ -209,24 +211,24 @@ void MTT::observe(const visualization_msgs::MarkerArray& in)
         obj.x0 = in.markers[i].pose.position.x;
         obj.y0 = in.markers[i].pose.position.y;
         obj.z0 = in.markers[i].pose.position.z;
-        // obj.l = in.markers[i].scale.x;
-        // obj.w = in.markers[i].scale.y;
-        // obj.h = in.markers[i].scale.z;
-        obj.l = 0.5;
-        obj.w = 0.5;
-        obj.h = 1.7;
+        obj.l = in.markers[i].scale.x;
+        obj.w = in.markers[i].scale.y;
+        obj.h = in.markers[i].scale.z;
+        // obj.l = 0.5;
+        // obj.w = 0.5;
+        // obj.h = 1.7;
 
         double xx = in.markers[i].pose.orientation.x;
         double yy = in.markers[i].pose.orientation.y;
         double zz = in.markers[i].pose.orientation.z;
         double ww = in.markers[i].pose.orientation.w;
         
-        // Eigen::Quaterniond q(ww, xx, yy, zz);
-        // Eigen::Vector3d q_eul = q.toRotationMatrix().eulerAngles(2, 1, 0);
-        // double phi = q_eul[0];
+        Eigen::Quaterniond q(ww, xx, yy, zz);
+        Eigen::Vector3d q_eul = q.toRotationMatrix().eulerAngles(2, 1, 0);
+        double phi = q_eul[0];
 
-        // obj.phi = phi;
-        obj.phi = 0;
+        obj.phi = phi;
+        // obj.phi = 0;
         obj.has_orientation = false;
 
         obj.xref = in.markers[i].pose.position.x;
@@ -235,11 +237,11 @@ void MTT::observe(const visualization_msgs::MarkerArray& in)
         double obj_scale = obj.l > obj.w ? obj.l : obj.w;
         double obj_height = obj.h;
         
-        // if((obj_scale >= min_scale_) && (obj_scale <= max_scale_) &&
-        //    (obj_height >= min_height_) && (obj_height <= max_height_))
-        // {
-        //     objs_observed_.push_back(obj);
-        // }
+        if((obj_scale >= min_scale_) && (obj_scale <= max_scale_) &&
+           (obj_height >= min_height_) && (obj_height <= max_height_))
+        {
+            objs_observed_.push_back(obj);
+        }
 
         std::string text = in.markers[i].text;
         if (!text.empty()) {
@@ -250,11 +252,11 @@ void MTT::observe(const visualization_msgs::MarkerArray& in)
                 if (label == "Pedestrian" && confidence >= confidence_) {
                     objs_observed_.push_back(obj);
                 }
+                else if (label == "AvgI" && confidence >= confidence_) {
+                    objs_observed_.push_back(obj);
+                }
             }
         }
-
-
-
 
 
     }
@@ -491,6 +493,7 @@ void MTT::publishMarkers(visualization_msgs::MarkerArray& markers)
     pub_.publish(markers);
 }
 
+/*
 void MTT::publishObstacles(perception_msgs::ObstacleArray& obstacles)
 {
     std_msgs::Header header;
@@ -539,6 +542,7 @@ void MTT::publishObstacles(perception_msgs::ObstacleArray& obstacles)
 
     pub_obstacle_array_.publish(obstacles);
 }
+*/
 
 void MTT::callback(const visualization_msgs::MarkerArray& markers_in)
 {
@@ -554,8 +558,8 @@ void MTT::callback(const visualization_msgs::MarkerArray& markers_in)
     visualization_msgs::MarkerArray markers_out;
     publishMarkers(markers_out);
 
-    perception_msgs::ObstacleArray obstacles;
-    publishObstacles(obstacles);
+    // perception_msgs::ObstacleArray obstacles;
+    // publishObstacles(obstacles);
 
 
     if(show_objects_num_ || show_time_)
@@ -572,8 +576,8 @@ void MTT::callback(const visualization_msgs::MarkerArray& markers_in)
     
     /*----------------------修改部分--------------------*/
     double min_dis = DBL_MAX;
-    size_t index = 0;
-    for(size_t p = 0; p < markers_out.markers.size(); p++)
+    size_t index = 0; // 发布最近的marker的相对坐标
+    for(size_t p = 0; p < markers_out.markers.size(); p++) // 实际上markers_out.size()为1
     {
         double x = markers_out.markers[p].pose.position.x;
         double y = markers_out.markers[p].pose.position.y;
@@ -589,7 +593,7 @@ void MTT::callback(const visualization_msgs::MarkerArray& markers_in)
         geometry_msgs::Point point_msg;
         if(markers_out.markers.size()>0)
         {
-            point_msg.x = objs_tracked_[index].x0+0.5;
+            point_msg.x = objs_tracked_[index].x0+0.5;  // 传感器安装偏差
             point_msg.y = objs_tracked_[index].y0;
             //point_msg.z = objs_tracked_[index].z0+0.3;
 
