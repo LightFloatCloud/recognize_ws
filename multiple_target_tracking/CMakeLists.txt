@@ -8,8 +8,8 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   perception_msgs
-  # tf2_ros
-  # tf2_geometry_msgs
+  tf2_ros
+  geometry_msgs
 )
 
 find_package(OpenMP)
@@ -22,8 +22,9 @@ endif()
 
 catkin_package(
   CATKIN_DEPENDS
-#     tf2_ros
-#     tf2_geometry_msgs
+    roscpp
+    tf2_ros
+    geometry_msgs
 )
 
 set(EIGEN_INC_DIR /usr/include/eigen3/)

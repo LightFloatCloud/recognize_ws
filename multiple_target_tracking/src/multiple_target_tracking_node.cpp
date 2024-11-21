@@ -5,9 +5,9 @@
 #include <std_msgs/Header.h>
 ////////////
 #include <geometry_msgs/Point.h>
-#include <tf2_ros/buffer.h>
-#include <tf2_ros/transform_listener.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <geometry_msgs/TransformStamped.h>
+// #include <tf2_ros/transform_listener.h>
+#include <tf2_ros/transform_broadcaster.h>
 
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -589,48 +589,42 @@ void MTT::callback(const visualization_msgs::MarkerArray& markers_in)
         }
     }
 
-    //
-        geometry_msgs::Point point_msg;
+    
+        
         if(markers_out.markers.size()>0)
         {
-            point_msg.x = objs_tracked_[index].x0+0.5;  // 传感器安装偏差
+            geometry_msgs::Point point_msg;
+            point_msg.x = objs_tracked_[index].x0;  // 传感器安装偏差
             point_msg.y = objs_tracked_[index].y0;
+            point_msg.z = objs_tracked_[index].z0;
             //point_msg.z = objs_tracked_[index].z0+0.3;
 
             std::cout << "The index_"<< index <<" position: " << point_msg.x <<","<< point_msg.y << std::endl;
+            
+            pub_position_.publish(point_msg);
+
+            static tf2_ros::TransformBroadcaster tf_broadcaster;
+            geometry_msgs::TransformStamped transform_stamped;
+            transform_stamped.header.stamp = ros::Time::now();
+            transform_stamped.header.frame_id = "body";
+            transform_stamped.child_frame_id = "target";
+
+            transform_stamped.transform.translation.x = point_msg.x;
+            transform_stamped.transform.translation.y = point_msg.y;
+            transform_stamped.transform.translation.z = point_msg.z;
+            transform_stamped.transform.rotation.x = 0.0;
+            transform_stamped.transform.rotation.y = 0.0;
+            transform_stamped.transform.rotation.z = 0.0;
+            transform_stamped.transform.rotation.w = 1.0;
+            tf_broadcaster.sendTransform(transform_stamped);
+
         }
-        //point_msg.z = (double)markers_out.markers.size();
-        pub_position_.publish(point_msg);
     
 
-/*
-    tf2_ros::Buffer tf_buffer;
-    tf2_ros::TransformListener tf_listener(tf_buffer);
-    std::string  target_name = "livox_frame";
-    std::string  source_name = "base_footprint";
-    geometry_msgs::PointStamped point;
-    point.header.frame_id = target_name;
-    point.header.stamp = ros::Time();
-    point.point.x=0;
-    point.point.y=0;
-    point.point.z=0;
-    //geometry_msgs::TransformStamped transformStamped = tf_buffer.lookupTransform(target_name, source_name, ros::Time(0));
-    //geometry_msgs::Vector3 translation = transformStamped.transform.translation;
-    //ROS_INFO("x=%f,y=%f,z=%f",translation.x, translation.y, translation.z);
-    geometry_msgs::PointStamped point_base;
-    point_base = tf_buffer.transform(point, source_name);
-    //std::out << "x="<<translation
-    if(markers_out.markers.size()>0)
-    {
-        geometry_msgs::Point point_msg;
-        
-        point_msg.x = objs_tracked_[index].x0 + point_base.point.x;
-        point_msg.y = objs_tracked_[index].y0 + point_base.point.y;
-        point_msg.z = objs_tracked_[index].z0 + point_base.point.z;
-        std::cout << "The index_"<< index <<" position: " << point_msg.x <<","<< point_msg.y << std::endl;
-        pub_position_.publish(point_msg);
-    }
-    */
+    
+
+
+    
     
     
     
