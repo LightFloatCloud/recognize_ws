@@ -104,7 +104,7 @@
         
         <!-- 丢弃超过该尺寸的目标，需要调整 -->
         <param name="min_scale" value="0.2"/>
-        <param name="" value="0.7"/>
+        <param name="max_scale" value="0.7"/>
         <param name="min_height" value="$(arg arg_human_height)"/>
         <param name="max_height" value="1.9"/>
         <!-- <param name="min_intensity" value="$(arg arg_min_intensity)"/> -->
@@ -121,4 +121,6 @@
     </node>
 
     <node pkg="rviz" type="rviz" name="rviz" args="-d $(find points_cluster)/launch/track.rviz" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="static_tf_livox2body"
+          args="0 0 0 0 0 0 1 body livox_frame" />
 </launch>
