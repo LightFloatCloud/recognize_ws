@@ -237,10 +237,10 @@ void MTT::observe(const visualization_msgs::MarkerArray& in)
         double obj_scale = obj.l > obj.w ? obj.l : obj.w;
         double obj_height = obj.h;
         
-        if((obj_scale >= min_scale_) && (obj_scale <= max_scale_) &&
-           (obj_height >= min_height_) && (obj_height <= max_height_))
+        if( !((obj_scale >= min_scale_) && (obj_scale <= max_scale_) &&
+           (obj_height >= min_height_) && (obj_height <= max_height_)) )
         {
-            objs_observed_.push_back(obj);
+            continue;
         }
 
         std::string text = in.markers[i].text;

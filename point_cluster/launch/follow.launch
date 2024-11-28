@@ -18,7 +18,7 @@
         <param name="TO_MERGE_CNT" value="1"/>
 
         <!--param name="sub_topic" value="/livox/lidar_192_168_1_102"/--> 
-        <param name="sub_topic" value="/livox/lidar_192_168_1_101"/> 
+        <param name="sub_topic" value="/livox/lidar"/> 
 
         <param name="pub_ground_topic" value="/points_ground"/>
         <param name="pub_no_ground_topic" value="/points_no_ground"/>
@@ -104,7 +104,7 @@
         
         <!-- 丢弃超过该尺寸的目标，需要调整 -->
         <param name="min_scale" value="0.2"/>
-        <param name="max_scale" value="0.8"/>
+        <param name="" value="0.7"/>
         <param name="min_height" value="$(arg arg_human_height)"/>
         <param name="max_height" value="1.9"/>
         <!-- <param name="min_intensity" value="$(arg arg_min_intensity)"/> -->
